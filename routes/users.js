@@ -103,19 +103,21 @@ router.patch('/:id',validator(updateUserBusinessScma),auth(["user"]), async(req,
 })
 
 //delete user
-router.delete('/:id',auth(["admin","user"]), async(req,res)=>{
+router.delete('/:id',auth([]), async(req,res)=>{
     try{
         //1.validate by middleware
-        //2. find user + delete
-        const user = await User.findOneAndDelete({_id:req.params.id});
+        //2. check the type of user
+        const user = await User.findOne({_id:req.payload._id});
         if(!user) return res.status(400).send("User not found");
+        if (!user.isAdmin && req.params.id !== req.payload._id) return res.status(403).send("You are not allowed to delete this user");
+        res.status(200).send("User has been deleted successfully");
+        //3. delete user
+        await User.deleteOne({_id:req.params.id});  
         res.status(200).send("User has been deleted successfully");
     }
     catch(error){
         res.status(400).send(error.message);
     }
 })
-
-
 
 module.exports = router;
