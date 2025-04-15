@@ -9,7 +9,7 @@ const morgan = require('morgan');
 const app = express();
 const port = process.env.PORT || 5001;
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI_ATLAS)
 .then(()=> console.log("Connected to MongoDB server"))
 .catch(err=>console.log(err))
 
