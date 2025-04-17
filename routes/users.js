@@ -62,11 +62,12 @@ router.get('/',auth(["admin"]), async(req, res)=>{
 })
 
 //get a specific user
-router.get('/:id',auth(["user","admin"]), async(req, res)=>{
+router.get('/:id',auth([]), async(req, res)=>{
     try{
+        if(!req.payload.isAdmin && req.params.id !== req.payload._id) return res.status(403).send("You are not allowed to access this resource");
         const user = await User.findById(req.params.id);
         if(!user) return res.status(400).send("User not found");
-        res.status(200).json(user);
+        res.status(200).send(user);
     }
     catch(error){
         res.status(400).send(error.message);
@@ -110,7 +111,6 @@ router.delete('/:id',auth([]), async(req,res)=>{
         const user = await User.findOne({_id:req.payload._id});
         if(!user) return res.status(400).send("User not found");
         if (!user.isAdmin && req.params.id !== req.payload._id) return res.status(403).send("You are not allowed to delete this user");
-        res.status(200).send("User has been deleted successfully");
         //3. delete user
         await User.deleteOne({_id:req.params.id});  
         res.status(200).send("User has been deleted successfully");
