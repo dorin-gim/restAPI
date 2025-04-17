@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const {registerSchema, loginSchma, updateUserScma, updateUserBusinessScma} = require('../Joi/usersSchema');
 const validator = require('../middlewares/validate');
 const auth = require('../middlewares/auth');
+const rateLimit = require('express-rate-limit');
 
 //register user
 router.post('/',validator(registerSchema),async(req , res)=>{
@@ -28,6 +29,20 @@ router.post('/',validator(registerSchema),async(req , res)=>{
         res.status(400).send(error.message);
     }
 })
+
+//block user for 24 hours
+const emailLimiter = rateLimit({
+ windowMs: 24 * 60 * 60 * 1000, // 24 hours
+ max: 3,
+ skipSuccessfulRequests: true,
+ message: {
+message:
+ "You've reached the resend limit, Resend will be available in 24 hours.",
+ },
+ headers: true,
+ keyGenerator: (req) => req.body.email,
+});
+router.use('/login', emailLimiter);
 
 //login user
 router.post('/login',validator(loginSchma), async(req, res)=>{
